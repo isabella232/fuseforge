@@ -144,8 +144,11 @@ class Repository < ActiveRecord::Base
   def crowd_app_name
     CROWD_CONFIG["http_application_name"]
   end
-  def crowd_password
+  def crowd_app_password
     CROWD_CONFIG["http_application_password"]
+  end
+  def crowd_app_expire
+    CROWD_CONFIG["http_application_expire"] || 600
   end
   
   def post_commit_hook_content(ml)
@@ -194,7 +197,7 @@ EOF
 
   PerlSetVar CrowdCacheEnabled on
   PerlSetVar CrowdCacheLocation #{SVN_ROOT}/crowd-cache
-  PerlSetVar CrowdCacheExpiry 300
+  PerlSetVar CrowdCacheExpiry #{crowd_app_expire}
 
   require valid-user
 
