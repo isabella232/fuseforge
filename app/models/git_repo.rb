@@ -228,10 +228,8 @@ EOF
     #{crowd_auth}
   </Location>
 EOF
-      rc += b;
-    end
+    rc += b;
     return rc
-  end
-  
+  end  
 
 end
