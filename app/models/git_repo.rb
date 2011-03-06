@@ -75,6 +75,10 @@ class GitRepo < ActiveRecord::Base
       else
         x.system("rm #{repo_filepath}/hooks/post-receive", git_user)
       end
+      
+      x.write(apache_git_file, "#{git_home}/httpd.conf/#{key}")==0 or raise 'Error creating apache conf file!'
+      
+      # x.system('/etc/init.d/apache2 reload', "root")==0 or raise 'Error reloading apache config!'      
 
     end
         
@@ -135,11 +139,12 @@ class GitRepo < ActiveRecord::Base
   end  
 
   def internal_anonymous_url
-    project.is_private? ? "" : "git://#{git_host}/#{key}.git"    
+#    project.is_private? ? "" : "git://#{git_host}/#{key}.git"    
+    project.is_private? ? "" : "#{FORGE_URL}/git/#{key}.git/"    
   end
   
   def internal_web_url
-    project.is_private? ? "" : "#{FORGE_URL}/gitweb?p=#{key}.git"    
+    project.is_private? ? "" : "#{FORGE_URL}/git/#{key}.git/"    
   end
   
   def git_config(ml)
@@ -159,5 +164,74 @@ class GitRepo < ActiveRecord::Base
 """
     end
   end
+
+  def git_prefix
+    "/forge/git"
+  end
+
+  def apache_write_groups
+    groups = "#{CrowdGroup.forge_admin_group.name}"
+    self.project.admin_groups.each do |group|
+      groups += ",#{group.name}"
+    end
+    self.project.member_groups.each do |group|
+      groups += ",#{group.name}"
+    end
+    return groups
+  end
+  
+  def crowd_app_name
+    CROWD_CONFIG["http_application_name"]
+  end
+  def crowd_app_password
+    CROWD_CONFIG["http_application_password"]
+  end
+  def crowd_app_expire
+    CROWD_CONFIG["http_application_expire"] || 600
+  end
+
+  def crowd_auth
+    rc = <<EOF
+    AuthType Basic
+    AuthName "FUSE Source Login"
+    PerlAuthenHandler Apache::CrowdAuth
+    PerlSetVar CrowdAppName #{crowd_app_name}
+    PerlSetVar CrowdAppPassword #{crowd_app_password}
+    PerlSetVar CrowdSOAPURL #{CROWD_URL}/services/SecurityServer
+    PerlAuthzHandler Apache::CrowdAuthz
+    PerlSetVar CrowdAllowedGroups #{apache_write_groups}
+    PerlSetVar CrowdCacheEnabled on
+    PerlSetVar CrowdCacheLocation #{DAV_ROOT}/crowd-cache
+    PerlSetVar CrowdCacheExpiry #{crowd_app_expire}
+    require valid-user    
+EOF
+  end
+  
+  def apache_git_file
+    if self.project.is_private
+      rc = <<EOF
+  <Location #{git_prefix}/#{key}.git/read>
+    Allow from All
+    #{crowd_auth}
+  </Location>
+EOF
+    else
+      rc = <<EOF
+  <Location #{git_prefix}/#{key}.git/read>
+    Allow from All
+  </Location>
+EOF
+    end
+    b = <<EOF
+  <Location #{git_prefix}/#{key}.git/write>
+    Allow from All
+    #{crowd_auth}
+  </Location>
+EOF
+      rc += b;
+    end
+    return rc
+  end
+  
 
 end
