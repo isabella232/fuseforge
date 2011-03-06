@@ -78,7 +78,7 @@ class GitRepo < ActiveRecord::Base
       
       x.write(apache_git_file, "#{git_home}/httpd.conf/#{key}")==0 or raise 'Error creating apache conf file!'
       
-      # x.system('/etc/init.d/apache2 reload', "root")==0 or raise 'Error reloading apache config!'      
+      x.system('/etc/init.d/apache2 reload', "root")==0 or raise 'Error reloading apache config!'      
 
     end
         
