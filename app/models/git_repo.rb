@@ -165,6 +165,8 @@ class GitRepo < ActiveRecord::Base
     end
   end
 
+  DAV_ROOT = '/var/forge/dav'
+  
   def git_prefix
     "/forge/git"
   end
