@@ -306,7 +306,7 @@ class Project < ActiveRecord::Base
     # Don't setup a deploy if a job is allready setup.
     return if deployment_status.next > deployment_status.last && !deployment_status.job.nil?
     deployment_status.next = deployment_status.last+1
-    deployment_status.job = send_later :method=>:deploy_nodelay, :run_at=>(Delayed::Job.db_time_now + 60*2)
+    deployment_status.job = send_later :method=>:deploy_nodelay, :run_at=>(Delayed::Job.db_time_now)
     deployment_status.save
   end
   
