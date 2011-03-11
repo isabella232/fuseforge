@@ -178,6 +178,7 @@ class GitRepo < ActiveRecord::Base
     self.project.member_groups.each do |group|
       groups += ",#{group.name}"
     end
+    groups
   end
   
   def crowd_auth(groups)
