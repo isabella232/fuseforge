@@ -213,6 +213,7 @@ EOF
     if self.project.is_private
       rc = <<EOF
   <Location #{git_prefix}/#{key}.git/read>
+    # private project
     Allow from All
     #{crowd_read_auth}
   </Location>
@@ -220,6 +221,7 @@ EOF
     else
       rc = <<EOF
   <Location #{git_prefix}/#{key}.git/read>
+    # public project
     Allow from All
   </Location>
 EOF
