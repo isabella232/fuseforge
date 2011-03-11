@@ -90,6 +90,20 @@ class Project < ActiveRecord::Base
     end  
   end
   
+  has_many :readonly_groups, :class_name => "ProjectReadonlyGroup" do
+    def user_names
+      all.collect { |x| x.user_names }.flatten.uniq
+    end
+
+    def users
+      all.collect { |x| x.users }.flatten.uniq
+    end
+
+    def group_names
+      all.collect { |x| x.name }
+    end  
+  end
+  
   belongs_to :license, :class_name => "ProjectLicense", :foreign_key => "license_id"
   belongs_to :status, :class_name => "ProjectStatus", :foreign_key => "project_status_id"
   belongs_to :maturity, :class_name => "ProjectMaturity", :foreign_key => "project_maturity_id"

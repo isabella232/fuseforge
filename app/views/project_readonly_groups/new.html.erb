@@ -1,0 +1,38 @@
+<%
+# ===========================================================================
+# Copyright (C) 2009, Progress Software Corporation and/or its 
+# subsidiaries or affiliates.  All rights reserved.
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ===========================================================================
+-%>
+<div class="wrapper">
+  <h1>Add Crowd Read Only Group to <%= h @project.name -%></h1>
+  <% form_for( [@project, @project_readonly_group] ) do |f| %>
+    <%= f.error_messages %>
+    <div class="one_column section">
+      <div class="interior">
+        <p>
+          <%= f.label :name %><br />
+          <%= f.select :name, options_for_select, { :prompt => true } %>
+        </p>
+      </div>
+    </div>    
+    <div class="form_button">
+      <%= f.submit "Add" %>
+    </div>
+  <% end %>
+  <div class="bottom_links">
+    <%= link_to 'Back', project_project_readonly_groups_path(:project_id => @project) %>
+  </div>
+</div>
