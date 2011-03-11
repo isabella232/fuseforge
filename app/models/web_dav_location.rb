@@ -235,6 +235,15 @@ class WebDavLocation < ActiveRecord::Base
     return groups
   end
   
+  def apache_read_groups
+    groups = apache_write_groups
+    self.project.readonly_groups.each do |group|
+      groups += ",#{group.name}"
+    end
+    return groups
+  end
+  
+  
   def crowd_app_name
     CROWD_CONFIG["http_application_name"]
   end
@@ -328,7 +337,7 @@ EOF
     PerlSetVar CrowdAppPassword #{crowd_app_password}
     PerlSetVar CrowdSOAPURL #{CROWD_URL}/services/SecurityServer
     PerlAuthzHandler Apache::CrowdAuthz
-    PerlSetVar CrowdAllowedGroups #{apache_write_groups}
+    PerlSetVar CrowdAllowedGroups #{apache_read_groups}
     PerlSetVar CrowdCacheEnabled on
     PerlSetVar CrowdCacheLocation #{DAV_ROOT}/crowd-cache
     PerlSetVar CrowdCacheExpiry #{crowd_app_expire}

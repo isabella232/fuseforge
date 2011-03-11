@@ -57,14 +57,6 @@ class GitRepo < ActiveRecord::Base
       end      
       x.write("#{project.name}\n", "#{repo_filepath}/description", git_user) 
 
-      if project.is_private? 
-        x.system("rm #{repo_filepath}/git-daemon-export-ok", git_user)
-        x.system("chmod o-rx #{repo_filepath}", git_user)
-      else
-        x.system("chmod o+rx #{repo_filepath}", git_user)
-        x.system("touch #{repo_filepath}/git-daemon-export-ok", git_user)
-      end
-      
       # Now update to use or not use the commit mailing list.
       ml = project.mailing_lists.find_by_name("commits")
       x.write(git_config(ml), "#{repo_filepath}/config", git_user) 
@@ -139,7 +131,6 @@ class GitRepo < ActiveRecord::Base
   end  
 
   def internal_anonymous_url
-#    project.is_private? ? "" : "git://#{git_host}/#{key}.git"    
     project.is_private? ? "" : "#{FORGE_URL}/git/#{key}.git/"    
   end
   
@@ -165,23 +156,10 @@ class GitRepo < ActiveRecord::Base
     end
   end
 
-  DAV_ROOT = '/var/forge/dav'
-  
   def git_prefix
     "/forge/git"
   end
 
-  def apache_write_groups
-    groups = "#{CrowdGroup.forge_admin_group.name}"
-    self.project.admin_groups.each do |group|
-      groups += ",#{group.name}"
-    end
-    self.project.member_groups.each do |group|
-      groups += ",#{group.name}"
-    end
-    return groups
-  end
-  
   def crowd_app_name
     CROWD_CONFIG["http_application_name"]
   end
@@ -192,7 +170,17 @@ class GitRepo < ActiveRecord::Base
     CROWD_CONFIG["http_application_expire"] || 600
   end
 
-  def crowd_auth
+  def write_groups
+    groups = "#{CrowdGroup.forge_admin_group.name}"
+    self.project.admin_groups.each do |group|
+      groups += ",#{group.name}"
+    end
+    self.project.member_groups.each do |group|
+      groups += ",#{group.name}"
+    end
+  end
+  
+  def crowd_auth(groups)
     rc = <<EOF
     AuthType Basic
     AuthName "FUSE Source Login"
@@ -201,12 +189,24 @@ class GitRepo < ActiveRecord::Base
     PerlSetVar CrowdAppPassword #{crowd_app_password}
     PerlSetVar CrowdSOAPURL #{CROWD_URL}/services/SecurityServer
     PerlAuthzHandler Apache::CrowdAuthz
-    PerlSetVar CrowdAllowedGroups #{apache_write_groups}
+    PerlSetVar CrowdAllowedGroups #{groups}
     PerlSetVar CrowdCacheEnabled on
-    PerlSetVar CrowdCacheLocation #{DAV_ROOT}/crowd-cache
+    PerlSetVar CrowdCacheLocation /var/forge/dav/crowd-cache
     PerlSetVar CrowdCacheExpiry #{crowd_app_expire}
     require valid-user    
 EOF
+  end
+  
+  def crowd_write_auth
+    crowd_auth(write_groups)
+  end
+  
+  def crowd_read_auth
+    groups = write_groups
+    self.project.readonly_groups.each do |group|
+      groups += ",#{group.name}"
+    end
+    crowd_auth(groups)
   end
   
   def apache_git_file
@@ -214,7 +214,7 @@ EOF
       rc = <<EOF
   <Location #{git_prefix}/#{key}.git/read>
     Allow from All
-    #{crowd_auth}
+    #{crowd_read_auth}
   </Location>
 EOF
     else
@@ -227,7 +227,7 @@ EOF
     b = <<EOF
   <Location #{git_prefix}/#{key}.git/write>
     Allow from All
-    #{crowd_auth}
+    #{crowd_write_auth}
   </Location>
 EOF
     rc += b;

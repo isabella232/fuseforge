@@ -171,8 +171,13 @@ EOF
     self.project.member_groups.each do |group|
       rc += "@#{group.name} = rw\n"
     end
-    
-    rc += "@registered-users = r\n" if !self.project.is_private? 
+    if self.project.is_private? 
+      self.project.readonly_groups.each do |group|
+        rc += "@#{group.name} = r\n"
+      end
+    else
+      rc += "@registered-users = r\n" 
+    end
     return rc;
   end
 
