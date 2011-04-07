@@ -136,7 +136,7 @@ class Project < ActiveRecord::Base
   validates_presence_of :other_license_url, :if => Proc.new { |x| x.license_id == ProjectLicense.other.id }
   
   validates_uniqueness_of :name, :shortname
-  validates_format_of :shortname, :with => /\A([a-z0-9]+)\Z/, :allow_blank => true
+  validates_format_of :shortname, :with => /\A([a-z0-9\-\_]+)\Z/, :allow_blank => true
   
   validates_associated :status, :maturity, :updated_by, :license
   validates_associated :created_by, :on => :create

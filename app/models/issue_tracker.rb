@@ -122,7 +122,7 @@ class IssueTracker < ActiveRecord::Base
   private 
   
   def key 
-    project.shortname.upcase
+    project.shortname.upcase.gsub(/[0-9\-\_]/, "")
   end
     
   def lead_admin_name

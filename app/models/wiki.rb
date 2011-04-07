@@ -107,7 +107,7 @@ class Wiki < ActiveRecord::Base
   private 
   
   def key 
-    project.shortname.upcase
+    project.shortname.upcase.gsub(/[\-\_]/, "")
   end
   
   def admin_groups
