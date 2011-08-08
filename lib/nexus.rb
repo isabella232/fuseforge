@@ -131,7 +131,7 @@ public
   # privileges access
   # ===================================================================
   def post_privileges_target(privileges_targe)
-    privileges_targe = {
+    privileges_target = {
       "name"=>nil, 
       "repositoryTargetId"=>nil,
       "description"=>"", 
@@ -140,7 +140,7 @@ public
       "method"=>["create","read","update","delete"],
       "type"=>"target"
     }.merge(privileges_targe);
-    request = {"data"=>privileges_targe}
+    request = {"data"=>privileges_target}
     post("#{url_base}/privileges_target", request)["data"]
   end 
   def get_privileges
@@ -160,17 +160,21 @@ public
   def post_staging_profile(staging_profile)
     staging_profile = { 
       "name"=>nil,
-      "repositoryTargetId"=>nil,
-      "promotionTargetRepository"=>nil,
       "repositoryTemplateId"=>"default_hosted_release",
       "repositoryType"=>"maven2",
       "targetGroups"=>["public"],
-      "finishNotifyEmails"=>nil,
-      "promotionNotifyEmails"=>nil,
       "finishNotifyRoles"=>[],
       "promotionNotifyRoles"=>[],
-      "closeRuleSets"=>[],
-      "promoteRuleSets"=>[]
+      "promoteRuleSets"=>[],
+      "inProgress"=> false,
+      "order"=> 99,
+      "stagingRepositoryIds"=> [],
+      "stagedRepositoryIds"=> [],
+      "dropNotifyRoles"=> [],
+      "mode"=> "DEPLOY",
+      "finishNotifyCreator"=> false,
+      "promotionNotifyCreator"=> false,
+      "dropNotifyCreator"=> false
     }.merge(staging_profile);
     request = {"data"=>staging_profile}
     post("#{url_base}/staging/profiles?#{dc}", request)["data"]
