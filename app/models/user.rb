@@ -106,7 +106,7 @@ class User < ActiveRecord::Base
   end
   
   def after_save
-    GitRepo.send_later(:export_ssh_keys) if ssh_public_key_changed? 
+    GitRepo.export_ssh_keys if ssh_public_key_changed? 
   end
   
   def self.each_ssh_public_key(&block)
