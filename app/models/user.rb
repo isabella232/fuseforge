@@ -93,7 +93,7 @@ class User < ActiveRecord::Base
     Time.utc(dest.year, dest.month, dest.day, dest.hour, dest.min, dest.sec)
   end
 
-  def after_find
+  def check_cached_data
     if !self.cached_at
       crowd_refresh 
     else 
@@ -149,6 +149,7 @@ class User < ActiveRecord::Base
   end
   
   def crowd_group_names
+    check_cached_data
     unless self.groups_cache
       self.groups_cache = Crowd.new.find_group_memberships(self.login)
     end
