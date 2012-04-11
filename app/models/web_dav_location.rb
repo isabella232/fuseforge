@@ -259,7 +259,7 @@ class WebDavLocation < ActiveRecord::Base
   Alias #{dav_prefix}/#{key} #{repo_filepath}
   <Directory #{repo_filepath}/>
     Options Indexes MultiViews FollowSymlinks
-    AllowOverride FileInfo
+    AllowOverride FileInfo 
     Order allow,deny
     allow from all
     <Files ~ "^\.ht">
@@ -321,7 +321,7 @@ EOF
   DocumentRoot #{repo_filepath}
   <Directory #{repo_filepath}/>
     Options Indexes MultiViews FollowSymlinks
-    AllowOverride FileInfo
+    AllowOverride FileInfo AuthConfig
     Order allow,deny
     allow from all 
   </Directory> 
